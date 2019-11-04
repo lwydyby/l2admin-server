@@ -147,7 +147,7 @@ public class UserService {
             throw new BaseException("该用户已赋予过该角色");
         }
         RoleUser roleUser=new RoleUser();
-        roleUser.setIsAdd(0);
+        roleUser.setIsAdd(1);
         roleUser.setRole(roleRepository.getOne(addUserRole.getRoleId()));
         roleUser.setUser(userRepository.getOne(addUserRole.getUserId()));
         roleUserRepository.save(roleUser);
