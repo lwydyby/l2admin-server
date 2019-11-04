@@ -115,6 +115,9 @@ public class UserService {
             userRepository.save(user);
         }else {
             User oldUser=userRepository.getOne(user.getId());
+            if("b4af61cd50ad1f4975dcccdbc55a60b0".equals(oldUser.getId())){
+                return;
+            }
             MyBeanUtils.copyProperties(user,oldUser);
             userRepository.save(oldUser);
         }

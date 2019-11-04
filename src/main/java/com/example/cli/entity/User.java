@@ -38,7 +38,6 @@ public class User implements Serializable {
      * 密码
      */
     @Column(name = "password")
-    @JsonIgnore
     private String password;
 
     /**
