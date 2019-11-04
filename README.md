@@ -17,3 +17,5 @@
 [vue前端项目](https://github.com/lwydyby/springboot-cli-web)
 
 [项目脚手架](https://github.com/lwydyby/springboot-cli-generator)
+
+[命令行脚手架](https://github.com/lwydyby/generator-cli)
