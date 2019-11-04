@@ -25,5 +25,5 @@ branches:
 
 after_success:
   - docker build -t $DOCKER_PROGRAM .
-  - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+  - docker login  -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
   - docker push $DOCKER_PROGRAM
