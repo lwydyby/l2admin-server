@@ -13,3 +13,6 @@ spring:
     generate-ddl: false
     hibernate:
       ddl-auto: none
+
+mybatis:
+  mapper-locations: classpath:mapper/*.xml
