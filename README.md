@@ -3,6 +3,7 @@
 [![Build Status](https://www.travis-ci.org/lwydyby/springboot-cli-server.svg?branch=master)](https://www.travis-ci.org/lwydyby/springboot-cli-server)
 
 ###项目简介
+
 l2admin 基于 Spring Boot 2.1.9 、 Jpa、mybatis, JWT、Shiro、Vue的前后端分离的后台管理系统， 
 权限控制的方式为RBAC，支持一键生成前后端代码(采用golang编写的命令行工具)，支持前端菜单动态路由。
 
