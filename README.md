@@ -1,6 +1,6 @@
 # l2-admin 后台管理系统
 
-[![Build Status](https://www.travis-ci.org/lwydyby/springboot-cli-server.svg?branch=master)](https://www.travis-ci.org/lwydyby/springboot-cli-server)
+[![Build Status](https://www.travis-ci.org/lwydyby/l2admin-server.svg?branch=master)](https://www.travis-ci.org/lwydyby/l2admin-server)
 
 ### 项目简介
 
