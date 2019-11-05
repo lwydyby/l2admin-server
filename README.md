@@ -1,16 +1,15 @@
-#l2-admin 后台管理系统
+# l2-admin 后台管理系统
 
-[![Build Status](https://www.travis-ci.org/lwydyby/springboot-cli-server.svg?branch=master)](https://www.travis-ci.org/lwydyby/springboot-cli-server)
+[![Build Status](https://www.travis-ci.org/lwydyby/l2admin-server.svg?branch=master)](https://www.travis-ci.org/lwydyby/l2admin-server)
 
-###项目简介
+### 项目简介
 
 l2admin 基于 Spring Boot 2.1.9 、 Jpa、mybatis, JWT、Shiro、Vue的前后端分离的后台管理系统， 
 权限控制的方式为RBAC，支持一键生成前后端代码(采用golang编写的命令行工具)，支持前端菜单动态路由。
 
 项目同时支持了mybatis和jpa，意在简单的查询使用jpa，复杂的多表联查使用mybatis。同时项目将依赖控制尽可能少，以便更简单的二次开发
 
-###项目预览
-
+### 项目预览
 http://dota2info.cn   用户名/密码：admin/123456
 
 ### 项目源码
