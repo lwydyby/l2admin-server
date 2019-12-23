@@ -62,13 +62,12 @@ public class UserPermissionService {
         List<Route> route=routeRepository.findAllByLock(0);
         PermissionInfo permission=new PermissionInfo();
         permission.setUserName(user.getName());
-        if(!user.getIsAdmin().equals(0)){
-            permission.setUserRoles(getUserRoles(user.getRoles()));
-            permission.setUserPermissions(getUserPermissions(user.getRoles()));
-            permission.setAccessMenus(getUserMenu(user.getRoles()));
-            permission.setAccessRoutes(getRoute(route));
-            permission.setAccessInterfaces(getInterface(getAllMenu(user.getRoles())));
-        }
+        permission.setUserRoles(getUserRoles(user.getRoles()));
+        permission.setUserPermissions(getUserPermissions(user.getRoles()));
+        permission.setAccessMenus(getUserMenu(user.getRoles()));
+        permission.setAccessRoutes(getRoute(route));
+        permission.setAccessInterfaces(getInterface(getAllMenu(user.getRoles())));
+
         permission.setAvatarUrl("https://wpimg.wallstcn.com/f778738c-e4f8-4870-b634-56703b4acafe.gif"); //
         permission.setIsAdmin(user.getIsAdmin());
         return permission;
@@ -134,7 +133,7 @@ public class UserPermissionService {
         for(Role role:set){
             Set<Menu> pSets= role.getPermissions();
             for(Menu menu:pSets){
-                if(menu.getLock().equals(0)&&menu.getType().equals(1)){
+                if(menu.getLock().equals(0)&&menu.getType().equals(2)){
                     result.add(menu.getPermission());
                 }
             }

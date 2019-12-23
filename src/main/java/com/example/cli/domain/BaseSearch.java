@@ -16,7 +16,4 @@ public class BaseSearch {
 
     private Integer limit;
 
-    private Long resource_pool;
-
-
 }

@@ -10,6 +10,7 @@ import com.example.cli.repository.RoleRepository;
 import com.example.cli.repository.RoleUserRepository;
 import com.example.cli.repository.UserRepository;
 import com.example.cli.utils.MyBeanUtils;
+import com.example.cli.utils.RequestUserHolder;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -110,14 +111,17 @@ public class UserService {
     }
 
     public void saveUser(User user){
+        User user1= RequestUserHolder.getUser();
         if(StringUtils.isEmpty(user.getId())){
             user.setIsAdmin(1);
             userRepository.save(user);
         }else {
-            User oldUser=userRepository.getOne(user.getId());
-            if("b4af61cd50ad1f4975dcccdbc55a60b0".equals(oldUser.getId())){
-                return;
+            if(user1.getId().equals(user.getId())){
+                if(user1.getIsAdmin().equals(1)){
+                    throw new BaseException("非管理员无法修改权限");
+                }
             }
+            User oldUser=userRepository.getOne(user.getId());
             MyBeanUtils.copyProperties(user,oldUser);
             userRepository.save(oldUser);
         }

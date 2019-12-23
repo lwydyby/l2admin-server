@@ -3,6 +3,7 @@ package com.example.cli.domain;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Set;
 
 /**
  * @author liwei
@@ -16,5 +17,5 @@ public class SavePermission {
 
     private String roleId;
 
-    private List<String> permissions;
+    private Set<String> permissions;
 }
