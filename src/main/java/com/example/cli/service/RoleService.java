@@ -113,9 +113,7 @@ public class RoleService {
             permission.setRole(role);
             Menu menu=menuRepository.getOne(id);
             //处理根节点不返回的问题
-            if(!StringUtils.isEmpty(menu.getParentId())){
-                rootMenu.add(menu.getParentId());
-            }
+            saveRootMenu(menu.getParentId(),rootMenu);
             permission.setMenu(menu);
             newPermission.add(permission);
         }
@@ -128,5 +126,17 @@ public class RoleService {
         permissionRepository.deleteAll(old);
         permissionRepository.saveAll(newPermission);
 
+    }
+
+    private void saveRootMenu(String id,Set<String> rootMenu){
+        if(StringUtils.isEmpty(id)){
+            return;
+        }
+        rootMenu.add(id);
+        Menu menu=menuRepository.getOne(id);
+        if(StringUtils.isEmpty(menu.getParentId())){
+            return;
+        }
+        saveRootMenu(menu.getParentId(),rootMenu);
     }
 }

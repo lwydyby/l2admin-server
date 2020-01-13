@@ -78,4 +78,7 @@ public class User implements Serializable {
 
     @Transient
     private Integer isAdd;
+
+    @Column(name = "project_id")
+    private String projectId;
 }
