@@ -9,14 +9,19 @@ l2admin 基于 Spring Boot 2.1.9 、 Jpa、mybatis, JWT、Shiro、Vue的前后�
 
 项目同时支持了mybatis和jpa，意在简单的查询使用jpa，复杂的多表联查使用mybatis。同时项目将依赖控制尽可能少，以便更简单的二次开发
 
+最新版改为使用ant-design-pro作为前端页面（目前仅完成权限控制功能,后续待开发）
+
 ### 项目预览
-http://dota2info.cn   用户名/密码：admin/123456
+
 
 ### 项目源码
 
+
 [springboot后端服务](https://github.com/lwydyby/springboot-cli-server)
 
-[vue前端项目](https://github.com/lwydyby/springboot-cli-web)
+[vue前端项目（新版ant-design-pro）](https://github.com/lwydyby/adn-design-pro-admin)
+
+[vue前端项目（旧版D2Admin）](https://github.com/lwydyby/springboot-cli-web)
 
 [项目脚手架(web一键生成工具已废弃)](https://github.com/lwydyby/springboot-cli-generator)
 
