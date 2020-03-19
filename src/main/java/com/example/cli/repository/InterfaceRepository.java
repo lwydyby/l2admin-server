@@ -15,6 +15,6 @@ import org.springframework.stereotype.Repository;
  * @since 2019-10-21 11:26:39
  */
 @Repository
-public interface InterfaceRepository extends JpaRepository<Interface,String>, JpaSpecificationExecutor<Interface> {
+public interface InterfaceRepository extends JpaRepository<Interface,Integer>, JpaSpecificationExecutor<Interface> {
 
 }

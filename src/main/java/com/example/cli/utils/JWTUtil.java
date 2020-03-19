@@ -5,31 +5,35 @@ import com.auth0.jwt.JWTVerifier;
 import com.auth0.jwt.algorithms.Algorithm;
 import com.auth0.jwt.exceptions.JWTDecodeException;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import com.example.cli.constant.AuthEnum;
+import io.jsonwebtoken.ExpiredJwtException;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
-
+@Component
 public class JWTUtil {
 
-    // 过期时间1小时
-    private static final long EXPIRE_TIME = 60*60*1000;
-
+    @Value("${auth.expireTime}")
+    private int expireTime;
+    @Value("${auth.secret}")
+    private String secret;
     /**
      * 校验token是否正确
-     * @param token 密钥
-     * @param secret 用户的密码
      * @return 是否正确
      */
-    public static boolean verify(String token, String username, String secret) {
+    public AuthEnum verify(String token) {
         try {
             Algorithm algorithm = Algorithm.HMAC256(secret);
             JWTVerifier verifier = JWT.require(algorithm)
-                    .withClaim("username", username)
                     .build();
-            DecodedJWT jwt = verifier.verify(token);
-            return true;
+            verifier.verify(token);
+            return AuthEnum.SUCCESS;
+        } catch (ExpiredJwtException e){
+            return AuthEnum.EXPIRE;
         } catch (Exception exception) {
-            return false;
+            return AuthEnum.FAILED;
         }
     }
 
@@ -37,7 +41,7 @@ public class JWTUtil {
      * 获得token中的信息无需secret解密也能获得
      * @return token中包含的用户名
      */
-    public static String getUsername(String token) {
+    public  String getUsername(String token) {
         try {
             DecodedJWT jwt = JWT.decode(token);
             return jwt.getClaim("username").asString();
@@ -46,7 +50,7 @@ public class JWTUtil {
         }
     }
 
-    public static Integer getUserId(String token) {
+    public  Integer getUserId(String token) {
         try {
             DecodedJWT jwt = JWT.decode(token);
             return jwt.getClaim("id").asInt();
@@ -54,7 +58,7 @@ public class JWTUtil {
             return null;
         }
     }
-    public static Integer getUserType(String token) {
+    public  Integer getUserType(String token) {
         try {
             DecodedJWT jwt = JWT.decode(token);
             return jwt.getClaim("type").asInt();
@@ -63,7 +67,7 @@ public class JWTUtil {
         }
     }
 
-    public static String getUserKey(String token,String key) {
+    public  String getUserKey(String token,String key) {
         try {
             DecodedJWT jwt = JWT.decode(token);
             return jwt.getClaim(key).asString();
@@ -72,14 +76,13 @@ public class JWTUtil {
         }
     }
     /**
-     * 生成签名,5min后过期
+     * 生成签名
      * @param username 用户名
-     * @param secret 用户的密码
      * @return 加密的token
      */
-    public static String sign(String id,String username, String secret) {
+    public  String sign(Integer id,String username) {
         try {
-            Date date = new Date(System.currentTimeMillis()+EXPIRE_TIME);
+            Date date = new Date(System.currentTimeMillis()+expireTime);
             Algorithm algorithm = Algorithm.HMAC256(secret);
             // 附带username信息
             return JWT.create()

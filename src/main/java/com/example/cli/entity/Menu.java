@@ -4,15 +4,13 @@ package com.example.cli.entity;
 import java.io.Serializable;
 
 
-import java.util.Date;
-import java.util.List;
 import java.util.Set;
 import javax.persistence.*;
 
-import com.example.cli.domain.BaseTree;
+import com.example.cli.domain.common.BaseTree;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 
 
 /**
@@ -23,19 +21,18 @@ import org.hibernate.annotations.GenericGenerator;
 @Data
 @Table(name = "menu")
 @Entity
-@GenericGenerator(name = "jpa-uuid", strategy = "uuid")
 public class Menu extends BaseTree<Menu> implements Serializable  {
     private static final long serialVersionUID = 1L;
 
 
     /***/
     @Id
-    @GeneratedValue(generator = "jpa-uuid")
-    private String id;
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    private Integer id;
 
     /***/
     @Column(name = "parent_id")
-    private String parentId;
+    private Integer parentId;
 
     /***/
     @Column(name = "path")
@@ -50,8 +47,14 @@ public class Menu extends BaseTree<Menu> implements Serializable  {
     private String icon;
 
     /***/
-    @Column(name = "permission")
-    private String permission;
+    @Column(name = "permission_id")
+    private String permissionId;
+
+    @Column(name = "permission_name")
+    private String permissionName;
+
+    @Column(name = "default_check")
+    private Boolean defaultCheck;
 
     /**
      * 类型 1 菜单 2 功能
@@ -71,10 +74,18 @@ public class Menu extends BaseTree<Menu> implements Serializable  {
     @Column(name = "is_lock")
     private Integer lock;
 
+    @OneToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinColumn(name = "route_id")
+    @JsonIgnoreProperties({"menu"})
+    private Route route;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(name = "function_interface",joinColumns = @JoinColumn(name="function_id",referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name = "interface_id",referencedColumnName = "id"))
+
+    @OneToMany(mappedBy = "menu",fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
     @JsonIgnore
     private Set<Interface> interfaces;
+
+    @ManyToMany(mappedBy = "menus")
+    @JsonIgnore
+    private Set<Role> roles;
 
 }

@@ -2,7 +2,7 @@ package com.example.cli.exception;
 
 
 import com.example.cli.constant.CommonConstant;
-import com.example.cli.domain.ResponseBean;
+import com.example.cli.domain.common.ResponseBean;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.shiro.authz.AuthorizationException;
 import org.apache.shiro.authz.UnauthenticatedException;

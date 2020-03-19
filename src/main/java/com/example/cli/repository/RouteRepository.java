@@ -17,6 +17,6 @@ import java.util.List;
  * @since 2019-10-21 11:26:39
  */
 @Repository
-public interface RouteRepository extends JpaRepository<Route,String>, JpaSpecificationExecutor<Route> {
+public interface RouteRepository extends JpaRepository<Route,Integer>, JpaSpecificationExecutor<Route> {
     List<Route> findAllByLock(Integer lock);
 }

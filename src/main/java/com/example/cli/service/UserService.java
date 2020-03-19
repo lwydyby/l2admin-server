@@ -1,18 +1,23 @@
 package com.example.cli.service;
 
 
-import com.example.cli.exception.BaseException;
-import com.example.cli.domain.*;
+import com.example.cli.constant.DeletedEnum;
+import com.example.cli.constant.StatusEnum;
+import com.example.cli.domain.add.AddUserRole;
+import com.example.cli.domain.common.ActionEntrySet;
+import com.example.cli.domain.common.PageInfo;
+import com.example.cli.domain.common.Permission;
+import com.example.cli.domain.search.UserRoleSearch;
+import com.example.cli.domain.search.UserSearch;
+import com.example.cli.entity.Menu;
 import com.example.cli.entity.Role;
-import com.example.cli.entity.RoleUser;
+import com.example.cli.entity.Route;
 import com.example.cli.entity.User;
 import com.example.cli.repository.RoleRepository;
-import com.example.cli.repository.RoleUserRepository;
 import com.example.cli.repository.UserRepository;
-import com.example.cli.utils.MyBeanUtils;
-import com.example.cli.utils.RequestUserHolder;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.example.cli.utils.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.shiro.crypto.hash.Md5Hash;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -20,11 +25,14 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+import sun.security.provider.MD5;
 
-import javax.persistence.criteria.*;
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.util.*;
+import javax.persistence.criteria.JoinType;
+import javax.persistence.criteria.Predicate;
+import javax.persistence.criteria.SetJoin;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
 import java.util.stream.Collectors;
 
 /**
@@ -42,12 +50,10 @@ public class UserService {
     @Autowired
     private ObjectMapper objectMapper;
     @Autowired
-    private RoleUserRepository roleUserRepository;
-    @Autowired
     private RoleRepository roleRepository;
 
-    public Page<User> getAll(UserSearch baseSearch) {
-        Pageable pageable = PageRequest.of(baseSearch.getPage() - 1, baseSearch.getLimit());
+    public PageInfo<User> getAll(UserSearch baseSearch) {
+        Pageable pageable = PageRequest.of(baseSearch.getPageNo() - 1, baseSearch.getPageSize());
         Specification<User> specification = (Specification<User>) (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
             if (!StringUtils.isEmpty(baseSearch.getName())) {
@@ -56,112 +62,140 @@ public class UserService {
             if (!StringUtils.isEmpty(baseSearch.getEmail())) {
                 predicates.add(criteriaBuilder.equal(root.get("email"), baseSearch.getEmail()));
             }
-            if (!StringUtils.isEmpty(baseSearch.getRoleId())) {
-                SetJoin<User, Role> roleJoin = root.join(root.getModel().getSet("roles", Role.class), JoinType.LEFT);
-
-                predicates.add(criteriaBuilder.equal(roleJoin.get("id").as(String.class),baseSearch.getRoleId()));
-            }
-            return query.where(predicates.toArray(new Predicate[predicates.size()])).getRestriction();
-
-        };
-        Page<User> page=userRepository.findAll(specification, pageable);
-        if (!StringUtils.isEmpty(baseSearch.getRoleId())) {
-            List<RoleUser> roleList=roleUserRepository.findAllByRole_id(baseSearch.getRoleId());
-            Map<String,Integer> map=roleList.stream().collect(Collectors.toMap(i->i.getUser().getId(),RoleUser::getIsAdd));
-
-            List<User> users=page.getContent();
-            for(User user:users){
-                user.setIsAdd(map.get(user.getId()));
-            }
-        }
-        return page;
-
-    }
-
-    public Page<RoleUser> getAllRole(UserRoleSearch userRoleSearch){
-        Pageable pageable = PageRequest.of(userRoleSearch.getPage() - 1, userRoleSearch.getLimit());
-        Specification<RoleUser> specification = (Specification<RoleUser>) (root, query, criteriaBuilder) -> {
-            List<Predicate> predicates = new ArrayList<>();
-            if (!StringUtils.isEmpty(userRoleSearch.getName())) {
-                predicates.add(criteriaBuilder.equal(root.join("role").get("name"), userRoleSearch.getName()));
-            }
-            if (!StringUtils.isEmpty(userRoleSearch.getCode())) {
-                predicates.add(criteriaBuilder.equal(root.join("role").get("code"), userRoleSearch.getCode()));
-            }
-
-            predicates.add(criteriaBuilder.equal(root.join("user").get("id"),userRoleSearch.getUserId()));
+            predicates.add(criteriaBuilder.equal(root.get("deleted"), DeletedEnum.NOT_DELETE));
             return query.where(predicates.toArray(new Predicate[predicates.size()])).getRestriction();
         };
-        Page<RoleUser> page=roleUserRepository.findAll(specification,pageable);
-        List<RoleUser> list=page.getContent();
-        for(RoleUser roleUser:list){
-            roleUser.getRole().setIsAdd(roleUser.getIsAdd());
+        return PageUtils.getPageInfo(userRepository.findAll(specification, pageable));
+
+    }
+
+
+
+
+    public User getInfo() {
+        User user = RequestUserHolder.getUser();
+        Role role = user.getRole();
+        if (role == null) {
+            return user;
         }
-        return roleUserRepository.findAll(specification,pageable);
+        List<Menu> menus = role.getMenus();
+        //获取树形结构的menu信息
+        List<Menu> treeMenus = TreeUtils.getMenuTreeList(menus);
+        List<Permission> permissions = new ArrayList<>();
+        getPermission(treeMenus, permissions, role.getRoleId());
+        role.setPermissions(permissions);
+        return user;
     }
-    public void modifyRoleUser(RoleUserAction roleUserAction){
-        RoleUser roleUser=roleUserRepository.findByUser_IdAndRole_Id(roleUserAction.getUserId(),roleUserAction.getRoleId());
-        roleUser.setIsAdd(roleUserAction.getAction());
-        roleUserRepository.save(roleUser);
+
+    public void getPermission(List<Menu> menus, List<Permission> permissions, String roleId) {
+        if (menus == null || menus.size() == 0) {
+            return;
+        }
+        if(menus.get(0).getType().equals(2)){
+            return;
+        }
+        for (Menu menu : menus) {
+            List<Menu> child = menu.getChildren();
+            Permission permission = new Permission();
+            permission.setRoleId(roleId);
+            permission.setPermissionId(menu.getPermissionId());
+            permission.setPermissionName(menu.getPermissionName());
+            if (child != null && child.size() != 0) {
+                if (child.get(0).getType().equals(2)) {
+                    //功能的话
+                    permission.setActionEntrySet(getAction(menu.getChildren()));
+                } else {
+                    //菜单
+                    getPermission(menu.getChildren(), permissions, roleId);
+                }
+            }
+            permissions.add(permission);
+        }
+
     }
 
 
-    public User getUserById(String id){
+    public List<Route> getCurrentUserNav() {
+        User user = RequestUserHolder.getUser();
+        Role role = user.getRole();
+        if (role == null) {
+            return null;
+        }
+
+        List<Menu> menus = role.getMenus();
+        //只要菜单的route
+        return menus.stream().filter(menu -> menu.getType().equals(1))
+                .map(Menu::getRoute)
+                .collect(Collectors.toList());
+    }
+
+
+
+
+    public User getUserById(Integer id) {
         return userRepository.getOne(id);
     }
 
-    public void saveUser(User user){
-        User user1= RequestUserHolder.getUser();
+    public void saveUser(User user) {
+        User useUser=RequestUserHolder.getUser();
+        if(!StringUtils.isEmpty(user.getRoleId())){
+            Role role=roleRepository.getOne(user.getRoleId());
+            user.setRole(role);
+        }
         if(StringUtils.isEmpty(user.getId())){
-            user.setIsAdmin(1);
-            userRepository.save(user);
+            user.setPassword(MD5Utils.stringToMD5(user.getPassword()));
+            user.setCreateTime(new Date());
+            user.setCreateUser(useUser);
+            user.setDeleted(DeletedEnum.NOT_DELETE);
+            userRepository.saveAndFlush(user);
         }else {
-            if(user1.getId().equals(user.getId())){
-                if(user1.getIsAdmin().equals(1)){
-                    throw new BaseException("非管理员无法修改权限");
-                }
-            }
-            User oldUser=userRepository.getOne(user.getId());
-            MyBeanUtils.copyProperties(user,oldUser);
-            userRepository.save(oldUser);
+            User old=userRepository.getOne(user.getId());
+            MyBeanUtils.copyProperties(user,old);
+            userRepository.saveAndFlush(old);
         }
 
     }
-    public void deleteUser(String id){
-        userRepository.deleteById(id);
+
+    public void deleteUser(Integer id) {
+        User user=userRepository.getOne(id);
+        user.setDeleted(DeletedEnum.DELETE);
+        userRepository.saveAndFlush(user);
     }
 
-    @Transactional(rollbackOn = Exception.class)
-    public void deleteUserBatch(String ids) throws IOException {
-       List<String> id=objectMapper.readValue(ids,new TypeReference<List<String>>(){});
-       for(String s:id){
-           userRepository.deleteById(s);
-       }
+    public void disableUser(Integer id){
+        User user=userRepository.getOne(id);
+        user.setStatus(StatusEnum.UNUSED);
+        userRepository.saveAndFlush(user);
+
     }
 
-    public List<UserInfo> getAllUser(){
-        List<User> list=userRepository.findAll();
-        List<UserInfo> result=new ArrayList<>();
-        list.forEach(u->{
-            result.add(new UserInfo(u.getId(),u.getTrueName()));
-        });
-        return result;
+    public void enableUser(Integer id){
+        User user=userRepository.getOne(id);
+        user.setStatus(StatusEnum.USED);
+        userRepository.saveAndFlush(user);
+
     }
 
-    public void addUserRole(AddUserRole addUserRole){
-        RoleUser check=roleUserRepository.findByUser_IdAndRole_Id(addUserRole.getUserId(),addUserRole.getRoleId());
-        if(check!=null){
-            throw new BaseException("该用户已赋予过该角色");
+
+
+    public void addUserRole(AddUserRole addUserRole) {
+        User user=userRepository.getOne(addUserRole.getUserId());
+        Role role=roleRepository.getOne(addUserRole.getRoleId());
+        user.setRole(role);
+        userRepository.saveAndFlush(user);
+    }
+
+    private List<ActionEntrySet> getAction(List<Menu> menus) {
+        List<ActionEntrySet> actionEntrySets = new ArrayList<>();
+        for (Menu menu : menus) {
+            actionEntrySets.add(ActionEntrySet.builder()
+                    .id(menu.getId())
+                    .action(menu.getPermissionId())
+                    .describe(menu.getPermissionName())
+                    .defaultCheck(menu.getDefaultCheck()).build());
         }
-        RoleUser roleUser=new RoleUser();
-        roleUser.setIsAdd(1);
-        roleUser.setRole(roleRepository.getOne(addUserRole.getRoleId()));
-        roleUser.setUser(userRepository.getOne(addUserRole.getUserId()));
-        roleUserRepository.save(roleUser);
+        return actionEntrySets;
     }
-
-
-
 
 
 }

@@ -4,12 +4,10 @@ package com.example.cli.entity;
 import java.io.Serializable;
 
 
-import java.util.Date;
 import javax.persistence.*;
 
-import com.example.cli.domain.BaseTree;
+import com.example.cli.domain.common.BaseTree;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 
 
 /**
@@ -20,19 +18,18 @@ import org.hibernate.annotations.GenericGenerator;
 @Data
 @Table(name = "route")
 @Entity
-@GenericGenerator(name = "jpa-uuid", strategy = "uuid")
 public class Route extends BaseTree<Route> implements Serializable {
     private static final long serialVersionUID = 1L;
 
 
     /***/
     @Id
-    @GeneratedValue(generator = "jpa-uuid")
-    private String id;
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    private Integer id;
 
     /***/
     @Column(name = "parent_id")
-    private String parentId;
+    private Integer parentId;
 
     /***/
     @Column(name = "path")
@@ -71,6 +68,9 @@ public class Route extends BaseTree<Route> implements Serializable {
     /***/
     @Column(name = "is_lock")
     private Integer lock;
+
+    @OneToOne(mappedBy = "route",fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    private Menu menu;
 
 
 }

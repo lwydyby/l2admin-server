@@ -1,7 +1,6 @@
 package com.example.cli.utils;
 
-import com.example.cli.domain.BaseTree;
-import com.example.cli.domain.MenuInfo;
+import com.example.cli.domain.common.BaseTree;
 import org.springframework.util.StringUtils;
 
 import java.util.*;
@@ -16,7 +15,7 @@ import java.util.stream.Collectors;
  */
 public class TreeUtils {
 
-    private static <T extends BaseTree> List<T> getMenuTreeList(List<T> menuList, String pid) {
+    private static <T extends BaseTree> List<T> getMenuTreeList(List<T> menuList, Integer pid) {
         // 查找所有菜单
         List<T> childrenList = new ArrayList<>();
         menuList.stream()

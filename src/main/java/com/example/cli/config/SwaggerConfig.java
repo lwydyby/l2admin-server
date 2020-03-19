@@ -33,7 +33,7 @@ public class SwaggerConfig {
     }
     private List<ApiKey> securitySchemes() {
         List<ApiKey> apiKeyList= new ArrayList();
-        apiKeyList.add(new ApiKey("X-Auth-Token", "X-Auth-Token", "header"));
+        apiKeyList.add(new ApiKey("Access-Token", "Access-Token", "header"));
         return apiKeyList;
     }
     private ApiInfo apiInfo() {

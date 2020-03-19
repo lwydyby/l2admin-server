@@ -1,18 +1,11 @@
 package com.example.cli.service;
 
-import com.example.cli.domain.RouteInfo;
-import com.example.cli.domain.RouteTree;
 import com.example.cli.entity.Route;
 import com.example.cli.repository.RouteRepository;
-import com.example.cli.utils.TreeUtils;
 import com.example.cli.utils.MyBeanUtils;
-import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
-
-import java.util.*;
-import java.util.stream.Collectors;
 
 /**
  * @author liwei
@@ -26,31 +19,14 @@ public class RouteService {
     @Autowired
     private RouteRepository routeRepository;
 
-    public List<RouteTree> getRouteList(){
-        List<Route> routes=routeRepository.findAllByLock(0);
-        List<RouteTree> result=new ArrayList<>();
-        for(Route route:routes){
-            RouteTree routeInfo=new RouteTree();
-            routeInfo.setId(route.getId());
-            routeInfo.setLabel(route.getTitle());
-            routeInfo.setSort(route.getSort());
-            routeInfo.setParentId(route.getParentId());
-            result.add(routeInfo);
-
-        }
-        return TreeUtils.getMenuTreeList(result);
-
-    }
 
 
-    public Route getRoute(String id){
+    public Route getRoute(Integer id){
         return routeRepository.getOne(id);
     }
 
     public void saveRoute(Route route){
         if(StringUtils.isEmpty(route.getId())){
-            route.setLock(0);
-            route.setCache(0);
             routeRepository.save(route);
         }else {
             Route target=routeRepository.getOne(route.getId());
@@ -59,7 +35,7 @@ public class RouteService {
         }
     }
 
-    public void delRoute(String id){
+    public void delRoute(Integer id){
         routeRepository.deleteById(id);
     }
 }

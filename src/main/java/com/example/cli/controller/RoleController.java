@@ -1,9 +1,10 @@
 package com.example.cli.controller;
 
-import com.example.cli.domain.ResponseBean;
-import com.example.cli.domain.BaseSearch;
-import com.example.cli.domain.SavePermission;
-import com.example.cli.domain.UserRoleSearch;
+import com.example.cli.domain.common.ResponseBean;
+import com.example.cli.domain.search.BaseSearch;
+import com.example.cli.domain.add.SavePermission;
+import com.example.cli.domain.search.RoleSearch;
+import com.example.cli.domain.search.UserRoleSearch;
 import com.example.cli.entity.Role;
 import com.example.cli.service.RoleService;
 import com.example.cli.service.UserService;
@@ -28,46 +29,50 @@ public class RoleController {
     @Autowired
     RoleService roleService;
 
-    @GetMapping("/pagedlist")
-    public ResponseBean getRolePagedList(UserRoleSearch userRoleSearch){
-        return new ResponseBean(userService.getAllRole(userRoleSearch));
-    }
-
-    @GetMapping("/page")
-    public ResponseBean getRolePage(BaseSearch baseSearch){
+    @GetMapping
+    public ResponseBean getRolePage(RoleSearch baseSearch){
         return new ResponseBean(roleService.getAll(baseSearch));
     }
 
+    @GetMapping("/getAllPermission")
+    public ResponseBean getAllPermission(){
+        return new ResponseBean(roleService.getAllPermission());
+    }
+
+
     @GetMapping("/{id}")
-    public ResponseBean getRole(@PathVariable String id){
+    public ResponseBean getRole(@PathVariable("id") Integer id){
         return new ResponseBean(roleService.getRole(id));
     }
 
-    @DeleteMapping("/del")
-    public ResponseBean delRole(@RequestParam("id")String id){
+    @DeleteMapping
+    public ResponseBean delRole(@RequestParam("id")Integer id){
         roleService.delRole(id);
         return new ResponseBean("success");
     }
-    @DeleteMapping("/batchdel")
-    public ResponseBean delRoleBatch(@RequestBody String ids) throws IOException {
-        roleService.deleteRoleBatch(ids);
+
+    @PutMapping("/enableRole")
+    public ResponseBean enableRole(@RequestParam("id") Integer id){
+        roleService.enableRole(id);
         return new ResponseBean("success");
     }
 
-    @PostMapping("/save")
+    @PutMapping("/disableRole")
+    public ResponseBean disableRole(@RequestParam("id") Integer id){
+        roleService.disableRole(id);
+        return new ResponseBean("success");
+    }
+
+    @PostMapping
     public ResponseBean saveRole(@RequestBody Role role){
         roleService.saveRole(role);
         return new ResponseBean("success");
     }
 
-    @GetMapping("/getpermissions/{id}")
-    public ResponseBean getRolePermissions(@PathVariable("id")String roleId){
-        return new ResponseBean(roleService.getRolePermissions(roleId));
+    @GetMapping("/getAll")
+    public ResponseBean getAll(){
+        return new ResponseBean(roleService.getAll());
     }
 
-    @PostMapping("/savepermission")
-    public ResponseBean savePermission(@RequestBody SavePermission savePermission){
-        roleService.savePermission(savePermission);
-        return new ResponseBean("success");
-    }
+
 }

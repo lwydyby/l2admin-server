@@ -6,12 +6,13 @@ import java.io.Serializable;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Set;
 import javax.persistence.*;
 
+import com.example.cli.constant.DeletedEnum;
+import com.example.cli.constant.StatusEnum;
+import com.example.cli.domain.common.Permission;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.ManyToAny;
 
 
 /**
@@ -22,38 +23,62 @@ import org.hibernate.annotations.ManyToAny;
 @Data
 @Table(name = "role")
 @Entity
-@GenericGenerator(name = "jpa-uuid", strategy = "uuid")
 public class Role implements Serializable {
     private static final long serialVersionUID = 1L;
 
 
     /***/
     @Id
-    @GeneratedValue(generator = "jpa-uuid")
-    private String id;
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    private Integer id;
 
     /***/
     @Column(name = "name")
     private String name;
 
     /***/
-    @Column(name = "code")
-    private String code;
+    @Column(name = "role_id")
+    private String roleId;
 
     /***/
     @Column(name = "description")
-    private String description;
+    private String describe;
 
 
+    @OneToOne(fetch = FetchType.EAGER,cascade = CascadeType.MERGE)
+    @JoinColumn(name = "create_id")
+    @JsonIgnore
+    private User createUser;
 
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(name = "permission",joinColumns = @JoinColumn(name="role_id",referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name = "function_id",referencedColumnName = "id"))
-    private Set<Menu> permissions;
+    @Column(name = "create_time")
+    private Date createTime;
 
-    @Transient
-    private Integer isAdd;
 
-    @ManyToMany(mappedBy = "roles")
+    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinTable(name = "menu_role",joinColumns = @JoinColumn(name="role_id",referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name = "function_id",referencedColumnName = "id"))
+    @JsonIgnore
+    private List<Menu> menus;
+
+
+    @OneToMany(mappedBy = "role",fetch = FetchType.EAGER,cascade = CascadeType.MERGE)
+    @JsonIgnore
     private List<User> users;
 
+    /**
+     * 0 使用 1禁用
+     */
+    @Enumerated(EnumType.ORDINAL)
+    private StatusEnum status;
+
+    /**
+     * 0 未删除 1 已删除
+     */
+    @Enumerated(EnumType.ORDINAL)
+    private DeletedEnum deleted;
+
+    @Transient
+    private List<Permission>  permissions;
+
+    @Transient
+    private List<List<Integer>> permissionIds;
 }

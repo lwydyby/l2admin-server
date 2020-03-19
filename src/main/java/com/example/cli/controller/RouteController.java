@@ -1,7 +1,6 @@
 package com.example.cli.controller;
 
-import com.example.cli.domain.ResponseBean;
-import com.example.cli.domain.BaseSearch;
+import com.example.cli.domain.common.ResponseBean;
 import com.example.cli.entity.Route;
 import com.example.cli.service.RouteService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,24 +20,20 @@ public class RouteController {
     @Autowired
     RouteService routeService;
 
-    @GetMapping
-    public ResponseBean getRouteList(){
-        return new ResponseBean(routeService.getRouteList());
-    }
 
-    @GetMapping("/{id}")
-    public ResponseBean getRoute(@PathVariable("id") String id){
+    @GetMapping
+    public ResponseBean getRoute(@RequestParam("id") Integer id){
         return new ResponseBean(routeService.getRoute(id));
     }
 
-    @PostMapping("/save")
+    @PostMapping
     public ResponseBean saveRoute(@RequestBody Route route){
         routeService.saveRoute(route);
         return new ResponseBean("success");
     }
 
-    @DeleteMapping("/{id}")
-    public ResponseBean delRoute(@PathVariable String id){
+    @DeleteMapping
+    public ResponseBean delRoute(@RequestParam("id") Integer id){
         routeService.delRoute(id);
         return new ResponseBean("success");
     }

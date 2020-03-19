@@ -1,13 +1,10 @@
 package com.example.cli.controller;
 
-import com.example.cli.domain.LoginForm;
-import com.example.cli.domain.ResponseBean;
+import com.example.cli.domain.common.LoginForm;
+import com.example.cli.domain.common.ResponseBean;
 import com.example.cli.service.UserPermissionService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/auth")
@@ -22,8 +19,10 @@ public class LoginController {
     }
 
 
+
     @RequestMapping(value = "/logout", method = RequestMethod.POST)
-    private ResponseBean layOut() {
+    private ResponseBean layOut(@RequestHeader("Access-Token") String token) {
+        userService.logout(token);
         return new ResponseBean(200, "layout success", null);
     }
 

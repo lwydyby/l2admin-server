@@ -20,15 +20,14 @@ import org.hibernate.annotations.GenericGenerator;
 @Data
 @Table(name = "interface")
 @Entity
-@GenericGenerator(name = "jpa-uuid", strategy = "uuid")
 public class Interface implements Serializable {
     private static final long serialVersionUID = 1L;
 
 
     /***/
     @Id
-    @GeneratedValue(generator = "jpa-uuid")
-    private String id;
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    private Integer id;
 
     /***/
     @Column(name = "name")
@@ -46,7 +45,8 @@ public class Interface implements Serializable {
     @Column(name = "description")
     private String description;
 
-	@OneToMany(mappedBy = "anInterface", cascade = CascadeType.ALL, orphanRemoval = true)
-	private Set<FunctionInterface> interfaces;
 
+    @ManyToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "function_id")
+    private Menu menu;
 }

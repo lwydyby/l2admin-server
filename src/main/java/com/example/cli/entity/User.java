@@ -3,13 +3,15 @@ package com.example.cli.entity;
 
 
 
+import com.example.cli.constant.DeletedEnum;
+import com.example.cli.constant.StatusEnum;
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
-import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.*;
 import java.io.Serializable;
-import java.util.Set;
+import java.util.Date;
 
 
 /**
@@ -20,15 +22,14 @@ import java.util.Set;
 @Data
 @Table(name = "user")
 @Entity
-@GenericGenerator(name = "jpa-uuid", strategy = "uuid")
 public class User implements Serializable {
     private static final long serialVersionUID = 1L;
 
 
     /***/
     @Id
-    @GeneratedValue(generator = "jpa-uuid")
-    private String id;
+    @GeneratedValue(strategy=GenerationType.IDENTITY)
+    private Integer id;
 
     /***/
     @Column(name = "name")
@@ -55,30 +56,50 @@ public class User implements Serializable {
     /**
      * 名称
      */
-    @Column(name = "true_name")
-    private String trueName;
+    @Column(name = "user_name")
+    private String userName;
 
     /**
      * 头像
      */
-    @Column(name = "avatar_url")
-    private String avatarUrl;
+    @Column(name = "avatar")
+    private String avatar;
+
+
+    @ManyToOne(fetch = FetchType.EAGER, cascade = CascadeType.MERGE)
+    @JoinTable(name = "role_user",joinColumns = @JoinColumn(name="user_id"),inverseJoinColumns = @JoinColumn(name = "role_id"))
+    @JsonIgnoreProperties({"users"})
+    private Role role;
+
+
+
+    @Column(name = "last_login_ip")
+    private String lastLoginIp;
+
+    @Column(name = "last_login_time")
+    private String lastLoginTime;
+
+    @OneToOne(fetch = FetchType.EAGER,cascade = CascadeType.MERGE)
+    @JoinColumn(name = "create_id")
+    @JsonIgnore
+    private User createUser;
+
+    @Column(name = "create_time")
+    private Date createTime;
 
     /**
-     * 是否是管理员 0 是 1 不是
+     * 0 使用 1 禁用
      */
-    @Column(name = "is_admin")
-    private Integer isAdmin;
-
-    @ManyToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    @JoinTable(name = "role_user",joinColumns = @JoinColumn(name="user_id",referencedColumnName = "id"),inverseJoinColumns = @JoinColumn(name = "role_id",referencedColumnName = "id"))
-    @JsonIgnore
-    private Set<Role> roles;
-
+    private StatusEnum status;
+    /**
+     * 0 未删除 1 已删除
+     */
+    private DeletedEnum deleted;
 
     @Transient
-    private Integer isAdd;
+    private Integer roleId;
 
-    @Column(name = "project_id")
-    private String projectId;
+
+
+
 }

@@ -1,16 +1,21 @@
 package com.example.cli.service;
 
-import com.example.cli.domain.BaseSearch;
-import com.example.cli.domain.RolePermission;
-import com.example.cli.domain.SavePermission;
+import com.example.cli.constant.DeletedEnum;
+import com.example.cli.constant.StatusEnum;
+import com.example.cli.domain.common.Permission;
+import com.example.cli.domain.common.RpInfo;
+import com.example.cli.domain.search.BaseSearch;
+import com.example.cli.domain.common.PageInfo;
+import com.example.cli.domain.search.RoleSearch;
 import com.example.cli.entity.Menu;
-import com.example.cli.entity.Permission;
 import com.example.cli.entity.Role;
+import com.example.cli.entity.User;
 import com.example.cli.repository.MenuRepository;
-import com.example.cli.repository.PermissionRepository;
 import com.example.cli.repository.RoleRepository;
 import com.example.cli.utils.MyBeanUtils;
-import com.fasterxml.jackson.core.type.TypeReference;
+import com.example.cli.utils.PageUtils;
+import com.example.cli.utils.RequestUserHolder;
+import com.example.cli.utils.TreeUtils;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -21,12 +26,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import javax.persistence.criteria.Predicate;
-import javax.transaction.Transactional;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * @author liwei
@@ -45,27 +46,87 @@ public class RoleService {
     ObjectMapper objectMapper;
 
     @Autowired
-    PermissionRepository permissionRepository;
-
-    @Autowired
     MenuRepository menuRepository;
 
-    public Page<Role> getAll(BaseSearch baseSearch) {
-        Pageable pageable = PageRequest.of(baseSearch.getPage() - 1, baseSearch.getLimit());
+    @Autowired
+    UserService userService;
+
+    public PageInfo<Role> getAll(RoleSearch baseSearch) {
+        Pageable pageable = PageRequest.of(baseSearch.getPageNo() - 1, baseSearch.getPageSize());
         Specification<Role> specification = (Specification<Role>) (root, query, criteriaBuilder) -> {
             List<Predicate> predicates = new ArrayList<>();
+            if(!StringUtils.isEmpty(baseSearch.getName())){
+                predicates.add(criteriaBuilder.equal(root.get("name"),baseSearch.getName()));
+            }
+            predicates.add(criteriaBuilder.equal(root.get("deleted"),DeletedEnum.NOT_DELETE));
             return query.where(predicates.toArray(new Predicate[predicates.size()])).getRestriction();
         };
-        return roleRepository.findAll(specification, pageable);
+        Page<Role> page=roleRepository.findAll(specification, pageable);
+        for(Role role:page.getContent()){
+            List<Permission> list=new ArrayList<>();
+
+            userService.getPermission(TreeUtils.getMenuTreeList(role.getMenus()),list,role.getRoleId());
+            role.setPermissions(list);
+        }
+        return PageUtils.getPageInfo(page);
 
     }
 
-    public Role getRole(String id){
-        return roleRepository.getOne(id);
+    public List<Permission> getAllPermission(){
+        List<Menu> menus=TreeUtils.getMenuTreeList(menuRepository.findAll());
+        List<Permission> list=new ArrayList<>();
+        userService.getPermission(menus,list,null);
+        return list;
     }
+
+    public Role getRole(Integer id){
+        Role role= roleRepository.getOne(id);
+        List<Permission> list=new ArrayList<>();
+        userService.getPermission(role.getMenus(),list,role.getRoleId());
+        role.setPermissions(list);
+        return role;
+    }
+
+    public List<Role> getAll(){
+        return roleRepository.findAllByDeletedAndStatus(DeletedEnum.NOT_DELETE,StatusEnum.USED);
+    }
+
+    public Role disableRole(Integer id){
+        Role role= roleRepository.getOne(id);
+        role.setStatus(StatusEnum.UNUSED);
+        roleRepository.saveAndFlush(role);
+        return role;
+    }
+
+    public Role enableRole(Integer id){
+        Role role= roleRepository.getOne(id);
+        role.setStatus(StatusEnum.USED);
+        roleRepository.saveAndFlush(role);
+        return role;
+    }
+
 
     public void saveRole(Role role){
+        User user= RequestUserHolder.getUser();
+        if(!StringUtils.isEmpty(role.getPermissionIds())){
+            List<Integer> menuList = role.getPermissionIds().stream().flatMap(Collection::stream)
+                    .distinct().collect(Collectors.toList());
+            Set<Integer> hasMenuId=new HashSet<>();
+            List<Menu> menus=new ArrayList<>();
+            for(Integer menuId:menuList){
+                Menu menu=menuRepository.getOne(menuId);
+                if(!hasMenuId.contains(menuId)){
+                    menus.add(menu);
+                    hasMenuId.add(menuId);
+                }
+                getParentMenu(menu,hasMenuId,menus);
+            }
+            role.setMenus(menus);
+        }
         if(StringUtils.isEmpty(role.getId())){
+            role.setCreateTime(new Date());
+            role.setCreateUser(user);
+            role.setDeleted(DeletedEnum.NOT_DELETE);
             roleRepository.save(role);
         }else {
             Role target=roleRepository.getOne(role.getId());
@@ -74,69 +135,28 @@ public class RoleService {
         }
     }
 
-    public void delRole(String id){
-        roleRepository.deleteById(id);
-    }
-
-    @Transactional(rollbackOn = Exception.class)
-    public void deleteRoleBatch(String ids) throws IOException {
-        List<String> id=objectMapper.readValue(ids,new TypeReference<List<String>>(){});
-        for(String s:id){
-            roleRepository.deleteById(s);
+    private void getParentMenu(Menu menu,Set<Integer> hasMenuId,List<Menu> menus){
+        if(menu.getParentId()!=null){
+            Menu parentMenu=menuRepository.getOne(menu.getParentId());
+            if(!hasMenuId.contains(parentMenu.getId())){
+                menus.add(parentMenu);
+                hasMenuId.add(parentMenu.getId());
+            }
+            if(!StringUtils.isEmpty(parentMenu.getParentId())){
+                getParentMenu(parentMenu,hasMenuId,menus);
+            }
         }
-    }
-
-    public List<RolePermission> getRolePermissions(String roleId){
-        List<Permission> list=permissionRepository.findAllByRole_Id(roleId);
-        List<RolePermission> result=new ArrayList<>();
-        //移除根节点防止默认全选
-        list.removeIf(p->StringUtils.isEmpty(p.getMenu().getParentId()));
-        list.forEach(permission -> {
-            RolePermission rolePermission=new RolePermission();
-            rolePermission.setFunctionId(permission.getMenu().getId());
-            rolePermission.setRoleId(permission.getRole().getId());
-            result.add(rolePermission);
-        });
-
-
-        return result;
-    }
-
-    @Transactional(rollbackOn = Exception.class)
-    public void savePermission(SavePermission savePermission){
-        List<Permission> old=permissionRepository.findAllByRole_Id(savePermission.getRoleId());
-        List<Permission> newPermission=new ArrayList<>();
-        Role role=roleRepository.getOne(savePermission.getRoleId());
-        Set<String> rootMenu=new HashSet<>();
-        for(String id:savePermission.getPermissions()){
-            Permission permission=new Permission();
-            permission.setRole(role);
-            Menu menu=menuRepository.getOne(id);
-            //处理根节点不返回的问题
-            saveRootMenu(menu.getParentId(),rootMenu);
-            permission.setMenu(menu);
-            newPermission.add(permission);
-        }
-        rootMenu.forEach(id->{
-            Permission permission=new Permission();
-            permission.setRole(role);
-            permission.setMenu(menuRepository.getOne(id));
-            newPermission.add(permission);
-        });
-        permissionRepository.deleteAll(old);
-        permissionRepository.saveAll(newPermission);
 
     }
 
-    private void saveRootMenu(String id,Set<String> rootMenu){
-        if(StringUtils.isEmpty(id)){
-            return;
-        }
-        rootMenu.add(id);
-        Menu menu=menuRepository.getOne(id);
-        if(StringUtils.isEmpty(menu.getParentId())){
-            return;
-        }
-        saveRootMenu(menu.getParentId(),rootMenu);
+    public void delRole(Integer id){
+        Role role= roleRepository.getOne(id);
+        role.setDeleted(DeletedEnum.DELETE);
+        roleRepository.delete(role);
     }
+
+
+
+
+
 }

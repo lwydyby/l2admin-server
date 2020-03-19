@@ -18,6 +18,11 @@ import org.springframework.stereotype.Repository;
  * @since 2019-10-21 11:26:40
  */
 @Repository
-public interface UserRepository extends JpaRepository<User,String>, JpaSpecificationExecutor<User> {
+public interface UserRepository extends JpaRepository<User,Integer>, JpaSpecificationExecutor<User> {
     User findByName(String name);
+
+    User findByEmail(String email);
+
+    User findByPhone(String phone);
+
 }
