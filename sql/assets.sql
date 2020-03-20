@@ -1,236 +1,31 @@
-/*
- Navicat Premium Data Transfer
+-- 表格可以使用jpa自动生成,修改配置文件即可
+-- 下面是基础的权限菜单数据
 
- Source Server         : 170
- Source Server Type    : MySQL
- Source Server Version : 50645
- Source Host           : 172.28.8.170:3306
- Source Schema         : assets
-
- Target Server Type    : MySQL
- Target Server Version : 50645
- File Encoding         : 65001
-
- Date: 23/10/2019 16:19:19
-*/
-
-SET NAMES utf8mb4;
-SET FOREIGN_KEY_CHECKS = 0;
-
-
-
--- ----------------------------
--- Table structure for function_interface
--- ----------------------------
-DROP TABLE IF EXISTS `function_interface`;
-CREATE TABLE `function_interface` (
-  `interface_id` varchar(50) COLLATE utf8_bin DEFAULT NULL,
-  `function_id` varchar(50) COLLATE utf8_bin DEFAULT NULL,
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`id`),
-  KEY `menu_2` (`function_id`) USING BTREE,
-  KEY `interface` (`interface_id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
-
-
--- ----------------------------
--- Table structure for interface
--- ----------------------------
-DROP TABLE IF EXISTS `interface`;
-CREATE TABLE `interface` (
-  `id` varchar(50) COLLATE utf8_bin NOT NULL,
-  `name` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `path` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `method` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `description` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
-
--- ----------------------------
--- Table structure for menu
--- ----------------------------
-DROP TABLE IF EXISTS `menu`;
-CREATE TABLE `menu` (
-  `id` varchar(50) COLLATE utf8_bin NOT NULL,
-  `parent_id` varchar(50) COLLATE utf8_bin DEFAULT NULL,
-  `path` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `title` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `icon` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `permission` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `type` tinyint(2) DEFAULT NULL COMMENT '类型',
-  `sort` int(10) DEFAULT NULL COMMENT '排序',
-  `is_lock` tinyint(1) DEFAULT NULL COMMENT '是否锁定',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- ----------------------------
--- Records of menu
--- ----------------------------
-BEGIN;
-INSERT INTO `menu` VALUES ('3b7a9043abc3d8b83eedbae627181343', '', NULL, '系统设置', 'cogs', NULL, 1, 1, 0);
-INSERT INTO `menu` VALUES ('6e217ea49288a434161dbbd178e13e13', '3b7a9043abc3d8b83eedbae627181343', '/system/route', '路由管理', 'cogs', NULL, 1, 3, 0);
-INSERT INTO `menu` VALUES ('82b104c4c019ea4eb93f224376c6a53d', '3b7a9043abc3d8b83eedbae627181343', '/system/user', '用户管理', 'cogs', NULL, 1, 5, 0);
-INSERT INTO `menu` VALUES ('a593d0bf805aac20b18abf970c918a94', '3b7a9043abc3d8b83eedbae627181343', '/system/menu', '菜单管理', 'cogs', NULL, 1, 2, 0);
-INSERT INTO `menu` VALUES ('cc4af1eba3c1386daf301236192f33d6', '3b7a9043abc3d8b83eedbae627181343', '/system/role', '角色管理', 'cogs', NULL, 1, 4, 0);
-COMMIT;
-
-
--- ----------------------------
--- Table structure for permission
--- ----------------------------
-DROP TABLE IF EXISTS `permission`;
-CREATE TABLE `permission` (
-  `role_id` varchar(50) COLLATE utf8_bin NOT NULL,
-  `function_id` varchar(50) COLLATE utf8_bin DEFAULT NULL,
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  PRIMARY KEY (`id`),
-  KEY `menu` (`function_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=60 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- ----------------------------
--- Records of permission
--- ----------------------------
-BEGIN;
-INSERT INTO `permission` VALUES ('0eedac4cabb81ef927efbf277e7332ed', '6e217ea49288a434161dbbd178e13e13', 49);
-INSERT INTO `permission` VALUES ('0eedac4cabb81ef927efbf277e7332ed', '82b104c4c019ea4eb93f224376c6a53d', 50);
-INSERT INTO `permission` VALUES ('0eedac4cabb81ef927efbf277e7332ed', 'a593d0bf805aac20b18abf970c918a94', 51);
-INSERT INTO `permission` VALUES ('0eedac4cabb81ef927efbf277e7332ed', 'cc4af1eba3c1386daf301236192f33d6', 52);
-INSERT INTO `permission` VALUES ('0eedac4cabb81ef927efbf277e7332ed', '3b7a9043abc3d8b83eedbae627181343', 58);
-
-COMMIT;
-
-
-
--- ----------------------------
--- Table structure for role
--- ----------------------------
-DROP TABLE IF EXISTS `role`;
-CREATE TABLE `role` (
-  `id` varchar(50) COLLATE utf8_bin NOT NULL,
-  `name` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `code` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `description` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- ----------------------------
--- Records of role
--- ----------------------------
-BEGIN;
-INSERT INTO `role` VALUES ('0eedac4cabb81ef927efbf277e7332ed', 'admin', 'admin', NULL);
-COMMIT;
-
--- ----------------------------
--- Table structure for role_user
--- ----------------------------
-DROP TABLE IF EXISTS `role_user`;
-CREATE TABLE `role_user` (
-  `role_id` varchar(50) COLLATE utf8_bin DEFAULT NULL,
-  `user_id` varchar(50) COLLATE utf8_bin DEFAULT NULL,
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `is_add` tinyint(2) DEFAULT NULL,
-  PRIMARY KEY (`id`),
-  KEY `user` (`user_id`) USING BTREE,
-  KEY `role` (`role_id`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=2 DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- ----------------------------
--- Records of role_user
--- ----------------------------
-BEGIN;
-INSERT INTO `role_user` VALUES ('0eedac4cabb81ef927efbf277e7332ed', 'b4af61cd50ad1f4975dcccdbc55a60b0', 1, 1);
-COMMIT;
-
--- ----------------------------
--- Table structure for route
--- ----------------------------
-DROP TABLE IF EXISTS `route`;
-CREATE TABLE `route` (
-  `id` varchar(50) COLLATE utf8_bin NOT NULL,
-  `parent_id` varchar(50) COLLATE utf8_bin DEFAULT NULL,
-  `path` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `name` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `title` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `permission` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `sort` int(10) DEFAULT NULL,
-  `component` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `component_path` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `cache` tinyint(1) DEFAULT NULL,
-  `is_lock` tinyint(1) DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- ----------------------------
--- Records of route
--- ----------------------------
-BEGIN;
-INSERT INTO `route` VALUES ('2962d69fe92d1bb0885239462da7dc6b', NULL, 'layoutHeaderAside', 'System', '系统设置', NULL, 0, 'layoutHeaderAside', 'layout/header-aside/layout', 0, 0);
-INSERT INTO `route` VALUES ('6bc77a97731f8ec8ac21a10332b07f18', '2962d69fe92d1bb0885239462da7dc6b', '/system/user', 'UserPage', '用户管理', NULL, 4, 'user', 'pages/sys/user/index', 0, 0);
-INSERT INTO `route` VALUES ('7f8ce15cd6dbe69eed4cf3659ffebc8f', '2962d69fe92d1bb0885239462da7dc6b', '/system/role', 'RolePage', '角色管理', NULL, 3, 'role', 'pages/sys/role/index', 0, 0);
-INSERT INTO `route` VALUES ('8e69733dd43ebb73cefd33e5d594793e', '2962d69fe92d1bb0885239462da7dc6b', '/system/interface', 'InterfacePage', '接口管理', NULL, 5, 'interface', 'pages/sys/interface/index', 0, 0);
-INSERT INTO `route` VALUES ('b88901adde7e64a9ac617a71a8230d58', '2962d69fe92d1bb0885239462da7dc6b', '/system/route', 'RoutePage', '路由管理', NULL, 2, 'route', 'pages/sys/route/index', 0, 0);
-INSERT INTO `route` VALUES ('c8e32d50bff734e6d516f7432388e861', '2962d69fe92d1bb0885239462da7dc6b', '/system/menu', 'MenuPage', '菜单管理', NULL, 1, 'menu', 'pages/sys/menu/index', 0, 0);
-COMMIT;
-
-
--- ----------------------------
--- Table structure for user
--- ----------------------------
-DROP TABLE IF EXISTS `user`;
-CREATE TABLE `user` (
-  `id` varchar(50) COLLATE utf8_bin NOT NULL,
-  `name` varchar(255) COLLATE utf8_bin DEFAULT NULL,
-  `password` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '密码',
-  `email` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '邮箱',
-  `phone` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '手机号',
-  `true_name` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '名称',
-  `avatar_url` varchar(255) COLLATE utf8_bin DEFAULT NULL COMMENT '头像',
-  `is_admin` tinyint(2) DEFAULT NULL COMMENT '是否是管理员',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_bin;
-
--- ----------------------------
--- Records of user
--- ----------------------------
-BEGIN;
-INSERT INTO `user` VALUES ('b4af61cd50ad1f4975dcccdbc55a60b0', 'admin', '123456', '123@123.com', '12345678901', '管理员', NULL, 1);
-COMMIT;
-
--- ----------------------------
--- Table structure for user_col
--- ----------------------------
-DROP TABLE IF EXISTS `user_col`;
-CREATE TABLE `user_col` (
-  `id` varchar(35) COLLATE utf8mb4_bin NOT NULL,
-  `user_id` varchar(35) COLLATE utf8mb4_bin DEFAULT NULL,
-  `col` longtext COLLATE utf8mb4_bin COMMENT '可见列',
-  `type` varchar(255) COLLATE utf8mb4_bin DEFAULT NULL COMMENT '表单名',
-  `orders` longtext COLLATE utf8mb4_bin COMMENT '列顺序',
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_bin;
-
--- ----------------------------
--- Records of user_col
--- ----------------------------
-BEGIN;
-INSERT INTO `user_col` VALUES ('8aaa1d126df78467016df7858c590000', 'b4af61cd50ad1f4975dcccdbc55a60b0', '', 'device', NULL);
-COMMIT;
-
-CREATE TABLE `assets`.`operate_log`  (
-  `id` int(11) NOT NULL AUTO_INCREMENT,
-  `modify_content` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL,
-  `modify_date` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL,
-  `modify_ip` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL,
-  `modify_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL,
-  `modify_object` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL,
-  `username` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NULL DEFAULT NULL,
-  PRIMARY KEY (`id`) USING BTREE
-) ENGINE = MyISAM AUTO_INCREMENT = 1 CHARACTER SET = utf8mb4 COLLATE = utf8mb4_bin ROW_FORMAT = Dynamic;
-
-
-SET FOREIGN_KEY_CHECKS = 1;
-
-
-
+INSERT INTO `menu`(`id`, `default_check`, `icon`, `is_lock`, `parent_id`, `path`, `permission_id`, `permission_name`, `sort`, `title`, `type`, `route_id`) VALUES (1, NULL, NULL, 0, NULL, '/system', 'system', '系统管理', 2, '系统管理', 1, NULL);
+INSERT INTO `menu`(`id`, `default_check`, `icon`, `is_lock`, `parent_id`, `path`, `permission_id`, `permission_name`, `sort`, `title`, `type`, `route_id`) VALUES (2, NULL, NULL, 0, 1, '/system/menu', 'systemMenu', '菜单管理', 1, '菜单管理', 1, 1);
+INSERT INTO `menu`(`id`, `default_check`, `icon`, `is_lock`, `parent_id`, `path`, `permission_id`, `permission_name`, `sort`, `title`, `type`, `route_id`) VALUES (3, NULL, NULL, 0, NULL, '/dashboard', 'dashboard', '主页', 1, '主页', 1, NULL);
+INSERT INTO `menu`(`id`, `default_check`, `icon`, `is_lock`, `parent_id`, `path`, `permission_id`, `permission_name`, `sort`, `title`, `type`, `route_id`) VALUES (4, NULL, NULL, NULL, 2, NULL, NULL, '编辑菜单', 1, NULL, 2, NULL);
+INSERT INTO `menu`(`id`, `default_check`, `icon`, `is_lock`, `parent_id`, `path`, `permission_id`, `permission_name`, `sort`, `title`, `type`, `route_id`) VALUES (5, NULL, NULL, NULL, 1, '/system/role', 'systemRole', '角色管理', 2, '角色管理', 1, 6);
+INSERT INTO `menu`(`id`, `default_check`, `icon`, `is_lock`, `parent_id`, `path`, `permission_id`, `permission_name`, `sort`, `title`, `type`, `route_id`) VALUES (6, NULL, NULL, NULL, 5, NULL, NULL, '增加角色', 1, NULL, 2, NULL);
+INSERT INTO `menu`(`id`, `default_check`, `icon`, `is_lock`, `parent_id`, `path`, `permission_id`, `permission_name`, `sort`, `title`, `type`, `route_id`) VALUES (7, NULL, NULL, NULL, 1, '/system/user', 'systemUser', '用户管理', 3, '用户管理', 1, 7);
+INSERT INTO `menu`(`id`, `default_check`, `icon`, `is_lock`, `parent_id`, `path`, `permission_id`, `permission_name`, `sort`, `title`, `type`, `route_id`) VALUES (8, NULL, NULL, NULL, 7, NULL, NULL, '增加用户', 1, NULL, 2, NULL);
+INSERT INTO `menu_role`(`role_id`, `function_id`) VALUES (2, 1);
+INSERT INTO `menu_role`(`role_id`, `function_id`) VALUES (2, 2);
+INSERT INTO `menu_role`(`role_id`, `function_id`) VALUES (2, 3);
+INSERT INTO `menu_role`(`role_id`, `function_id`) VALUES (2, 4);
+INSERT INTO `menu_role`(`role_id`, `function_id`) VALUES (2, 5);
+INSERT INTO `menu_role`(`role_id`, `function_id`) VALUES (2, 7);
+INSERT INTO `menu_role`(`role_id`, `function_id`) VALUES (3, 4);
+INSERT INTO `menu_role`(`role_id`, `function_id`) VALUES (3, 2);
+INSERT INTO `menu_role`(`role_id`, `function_id`) VALUES (3, 1);
+INSERT INTO `menu_role`(`role_id`, `function_id`) VALUES (3, 6);
+INSERT INTO `menu_role`(`role_id`, `function_id`) VALUES (3, 5);
+INSERT INTO `role`(`id`, `create_time`, `deleted`, `description`, `name`, `role_id`, `status`, `create_id`) VALUES (2, '2020-03-19 09:07:45', 0, '管理员', '管理员', 'admin', 0, 1);
+INSERT INTO `role`(`id`, `create_time`, `deleted`, `description`, `name`, `role_id`, `status`, `create_id`) VALUES (3, '2020-03-19 04:42:12', 0, '测试', '测试', NULL, 0, 1);
+INSERT INTO `role_user`(`role_id`, `user_id`) VALUES (2, 1);
+INSERT INTO `role_user`(`role_id`, `user_id`) VALUES (2, 2);
+INSERT INTO `route`(`id`, `cache`, `component`, `component_path`, `is_lock`, `name`, `parent_id`, `path`, `permission`, `sort`, `title`) VALUES (1, NULL, 'menu', '@/views/other/TreeList', NULL, '菜单管理', NULL, '@/views/other/TreeList', NULL, 1, '菜单管理');
+INSERT INTO `route`(`id`, `cache`, `component`, `component_path`, `is_lock`, `name`, `parent_id`, `path`, `permission`, `sort`, `title`) VALUES (6, NULL, 'role', '@/views/other/RoleList', NULL, '角色管理', NULL, '@/views/other/TreeList', NULL, 2, NULL);
+INSERT INTO `route`(`id`, `cache`, `component`, `component_path`, `is_lock`, `name`, `parent_id`, `path`, `permission`, `sort`, `title`) VALUES (7, NULL, 'user', '@/views/other/UserList', NULL, '用户管理', NULL, '@/views/other/UserList', NULL, 3, NULL);
+INSERT INTO `user`(`id`, `avatar`, `create_time`, `deleted`, `email`, `last_login_ip`, `last_login_time`, `name`, `password`, `phone`, `status`, `user_name`, `create_id`) VALUES (1, NULL, '2020-03-19 08:48:06', 0, NULL, NULL, NULL, 'admin', 'e10adc3949ba59abbe56e057f20f883e', '17611450831', 0, NULL, 1);
+INSERT INTO `user`(`id`, `avatar`, `create_time`, `deleted`, `email`, `last_login_ip`, `last_login_time`, `name`, `password`, `phone`, `status`, `user_name`, `create_id`) VALUES (2, NULL, '2020-03-19 06:10:48', 0, '123@123.com', NULL, NULL, 'test', 'e10adc3949ba59abbe56e057f20f883e', '123456', 0, NULL, 1);
