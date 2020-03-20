@@ -65,7 +65,7 @@ public class UserService {
             predicates.add(criteriaBuilder.equal(root.get("deleted"), DeletedEnum.NOT_DELETE));
             return query.where(predicates.toArray(new Predicate[predicates.size()])).getRestriction();
         };
-        return PageUtils.getPageInfo(userRepository.findAll(specification, pageable));
+        return PageUtils.getPageInfo(userRepository.findAll(specification, pageable),User.class);
 
     }
 

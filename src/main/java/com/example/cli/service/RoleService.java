@@ -68,7 +68,7 @@ public class RoleService {
             userService.getPermission(TreeUtils.getMenuTreeList(role.getMenus()),list,role.getRoleId());
             role.setPermissions(list);
         }
-        return PageUtils.getPageInfo(page);
+        return PageUtils.getPageInfo(page,Role.class);
 
     }
 

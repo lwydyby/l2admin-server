@@ -10,6 +10,7 @@ import javax.persistence.*;
 
 import com.example.cli.constant.DeletedEnum;
 import com.example.cli.constant.StatusEnum;
+import com.example.cli.constant.TableColumn;
 import com.example.cli.domain.common.Permission;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
@@ -30,10 +31,12 @@ public class Role implements Serializable {
     /***/
     @Id
     @GeneratedValue(strategy=GenerationType.IDENTITY)
+    @TableColumn(title = "唯一识别码",sort = 1)
     private Integer id;
 
     /***/
     @Column(name = "name")
+    @TableColumn(title = "角色名称",sort = 2)
     private String name;
 
     /***/
@@ -51,6 +54,7 @@ public class Role implements Serializable {
     private User createUser;
 
     @Column(name = "create_time")
+    @TableColumn(title = "创建时间",scopeSlots = "createTime",sort = 4)
     private Date createTime;
 
 
@@ -68,6 +72,7 @@ public class Role implements Serializable {
      * 0 使用 1禁用
      */
     @Enumerated(EnumType.ORDINAL)
+    @TableColumn(title = "状态",sort = 3)
     private StatusEnum status;
 
     /**

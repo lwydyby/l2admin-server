@@ -12,4 +12,6 @@ public class PageInfo<T> {
     private long totalCount;
 
     private List<T> data;
+
+    private List<Column> columns;
 }
